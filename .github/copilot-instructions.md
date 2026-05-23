@@ -11,8 +11,8 @@
 You are helping develop **Knowledge Onboarding Agent** — a local-first AI-powered knowledge system that ingests markdown files, generates local embeddings, and synthesizes answers using a local Ollama LLM. No cloud AI APIs are used.
 
 Before writing any code, you should understand the project's current state. Ask me to load context if it hasn't been established:
-- `context/CONTEXT.md` — project identity, stack, conventions
-- `context/implementation-tracker.md` — current progress
+- `.github/context/CONTEXT.md` — project identity, stack, conventions
+- `.github/context/implementation-tracker.md` — current progress
 
 ---
 
@@ -124,5 +124,5 @@ If a task could be implemented multiple ways that make different architectural t
 | Hardware and software constraints | `docs/constraints/runtime-constraints.md` |
 | Development roadmap | `docs/roadmap/roadmap.md` |
 | Architecture decisions | `docs/decisions/` |
-| Current implementation state | `context/implementation-tracker.md` |
-| Session history | `context/session-log.md` |
+| Current implementation state | `.github/context/implementation-tracker.md` |
+| Session history | `.github/context/session-log.md` |

@@ -49,6 +49,6 @@
 - No implementation code written yet — by design
 
 **Next session should start with**:
-1. Load `context/CONTEXT.md` and `context/implementation-tracker.md`
+1. Load `.github/context/CONTEXT.md` and `.github/context/implementation-tracker.md`
 2. Finalize ADR-001 (choose embedding model after reviewing Ollama model library)
 3. Scaffold `pyproject.toml` and `src/knowledge_onboarding_agent/` package stubs (Phase 0 completion)

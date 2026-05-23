@@ -24,8 +24,8 @@ At the beginning of every AI session (Copilot, ChatGPT, etc.), paste this as you
 ```
 Please load and acknowledge the following project context files before we begin:
 
-1. context/CONTEXT.md — project identity, stack, conventions
-2. context/implementation-tracker.md — what is built, in progress, and next
+1. .github/context/CONTEXT.md — project identity, stack, conventions
+2. .github/context/implementation-tracker.md — what is built, in progress, and next
 
 After loading, summarize:
 - Current project phase
@@ -51,7 +51,7 @@ Use when: making a significant design decision, choosing a library, defining an 
 3. Ask the AI to enumerate options with tradeoffs
 4. Discuss constraints (reference `docs/constraints/runtime-constraints.md`)
 5. Record the decision in a new ADR (`docs/decisions/ADR-NNN-*.md`)
-6. Update `context/CONTEXT.md` under "Active Architecture Decisions"
+6. Update `.github/context/CONTEXT.md` under "Active Architecture Decisions"
 7. Commit the ADR before writing any code that enacts the decision
 
 **Copilot prompt template**: `.github/prompts/architecture-discussion.md`
@@ -103,7 +103,7 @@ Use when: a non-trivial architectural decision must be made.
 4. Ask the AI to critique the options or suggest missing alternatives
 5. Fill in the Decision section
 6. Commit the ADR
-7. Update `context/CONTEXT.md` "Active Architecture Decisions" table
+7. Update `.github/context/CONTEXT.md` "Active Architecture Decisions" table
 
 **Copilot prompt template**: `.github/prompts/adr-creation.md`
 
@@ -115,8 +115,8 @@ Use when: a session has been long and context window pressure is building.
 
 **Steps**:
 1. Ask the AI: "Summarize what we have decided and built in this session as a session log entry."
-2. Paste the summary into `context/session-log.md`
-3. Update `context/implementation-tracker.md`
+2. Paste the summary into `.github/context/session-log.md`
+3. Update `.github/context/implementation-tracker.md`
 4. Commit both files
 5. Start a new session using the Session Start Protocol
 
@@ -198,4 +198,4 @@ Warning signs:
 - Sessions begin without loading context
 - Architecture is being discovered by reading code rather than docs
 - ADRs are being written after the fact to rationalize code already written
-- `context/CONTEXT.md` is out of date
+- `.github/context/CONTEXT.md` is out of date

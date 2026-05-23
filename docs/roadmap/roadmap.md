@@ -24,7 +24,7 @@ Each phase should produce:
 
 Deliverables:
 - [x] Repository structure designed and documented
-- [x] AI context memory system created (`context/`)
+- [x] AI context memory system created (`.github/context/`)
 - [x] All documentation templates created (`docs/`)
 - [x] Copilot instructions and prompt templates created (`.github/`)
 - [ ] `pyproject.toml` scaffolded

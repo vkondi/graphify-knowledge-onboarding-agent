@@ -46,7 +46,7 @@ For this task, please:
 
 4. Do not add features beyond what is stated in the task.
 
-5. After implementation, remind me to update `context/implementation-tracker.md`.
+5. After implementation, remind me to update `.github/context/implementation-tracker.md`.
 
 ---
 

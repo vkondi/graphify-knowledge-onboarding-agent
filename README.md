@@ -1,4 +1,4 @@
-# Knowledge Onboarding Agent
+﻿# Knowledge Onboarding Agent
 
 > A local-first AI-powered knowledge assistant that ingests your markdown notes, indexes them with local embeddings, and answers questions by reasoning across your entire knowledge base — entirely on your own hardware, with no cloud APIs.
 
@@ -70,7 +70,7 @@ You should see `nomic-embed-text` and `mistral` in the output.
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-org/koa.git
+git clone https://github.com/vkondi/knowledge-onboarding-agent.git
 cd koa
 ```
 

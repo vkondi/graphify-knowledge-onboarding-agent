@@ -17,7 +17,7 @@ Based on everything we have discussed and implemented in this session, please ge
 
 ### 1. Session Log Entry
 
-In this format (for `context/session-log.md`):
+In this format (for `.github/context/session-log.md`):
 
 ```markdown
 ## YYYY-MM-DD — [Brief Title]
@@ -31,14 +31,14 @@ In this format (for `context/session-log.md`):
 
 ### 2. Implementation Tracker Updates
 
-List any tasks from `context/implementation-tracker.md` that should be:
+List any tasks from `.github/context/implementation-tracker.md` that should be:
 - Moved from `[ ]` to `[x]` (completed)
 - Moved from `[ ]` to `[-]` (started but not done)
 - Added as new tasks
 
 ### 3. CONTEXT.md Updates
 
-List any changes that should be reflected in `context/CONTEXT.md`:
+List any changes that should be reflected in `.github/context/CONTEXT.md`:
 - Stack decisions that were finalized
 - Architecture changes
 - Active ADRs to add or update

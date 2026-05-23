@@ -115,8 +115,8 @@ See [`../docs/roadmap/roadmap.md`](../docs/roadmap/roadmap.md) for full roadmap.
 - ADRs must be committed before implementation code that enacts the decision
 
 ### AI Sessions
-- Always load `context/CONTEXT.md` + `context/implementation-tracker.md` first
-- Update `context/session-log.md` with a brief summary at end of session
+- Always load `.github/context/CONTEXT.md` + `.github/context/implementation-tracker.md` first
+- Update `.github/context/session-log.md` with a brief summary at end of session
 - Update `implementation-tracker.md` after completing any meaningful unit of work
 
 ---
