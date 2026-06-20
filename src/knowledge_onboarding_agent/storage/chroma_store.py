@@ -11,7 +11,10 @@ from typing import TYPE_CHECKING
 
 import chromadb
 
-from knowledge_onboarding_agent.models import EmbeddedChunk
+from knowledge_onboarding_agent.models import Chunk, EmbeddedChunk
+
+# Metadata keys injected by upsert_embedded_chunks that are not part of Chunk.metadata
+_RESERVED_METADATA_KEYS = frozenset({"content_hash", "content", "source_path", "chunk_index"})
 
 if TYPE_CHECKING:
     from knowledge_onboarding_agent.config import Settings
@@ -200,6 +203,34 @@ class ChromaDBStore:
         stale chunks are removed from the vector store.
         """
         self._collection.delete(where={"source_path": source_path})
+
+    def get_chunks_by_ids(self, chunk_ids: list[str]) -> list[Chunk]:
+        """Fetch ``Chunk`` objects for the given *chunk_ids* from the collection.
+
+        IDs that do not exist in the collection are silently skipped.
+        Used by ``GraphRetriever`` to reconstruct chunks from graph traversal results.
+        """
+        if not chunk_ids:
+            return []
+        results = self._collection.get(ids=chunk_ids, include=["metadatas"])
+        chunks: list[Chunk] = []
+        for record_id, meta in zip(
+            results.get("ids") or [], results.get("metadatas") or []
+        ):
+            if not meta:
+                continue
+            chunk_metadata = {k: v for k, v in meta.items() if k not in _RESERVED_METADATA_KEYS}
+            chunks.append(
+                Chunk(
+                    id=record_id,
+                    source_path=Path(meta["source_path"]),
+                    content=meta["content"],
+                    chunk_index=int(meta["chunk_index"]),
+                    metadata=chunk_metadata,
+                    content_hash=meta["content_hash"],
+                )
+            )
+        return chunks
 
     def reset(self) -> None:
         """Delete and recreate the collection, wiping all stored chunks.

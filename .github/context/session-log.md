@@ -121,3 +121,45 @@
 - Web UI deferred to future consideration
 
 **Next session should start with**: Phase 6 - implement `TopicSynthesizer` and `koa summarize` command
+
+---
+
+## 2026-06-21 - Phase 6 Knowledge Graph Layer
+
+**Session goal**: Enhance the existing RAG agent with a knowledge graph layer for relationship-aware retrieval, hybrid retrieval, and graph-backed query answering.
+
+**Completed**:
+- Wrote ADR-002 (`docs/decisions/ADR-002-knowledge-graph-selection.md`) — NetworkX selected over Kuzu/Neo4j/SQLite
+- Wrote knowledge graph architecture document (`docs/architecture/knowledge-graph.md`) — entity schema, extraction strategy, traversal, hybrid retrieval, config reference
+- Added new data models: `Entity`, `Relationship`, `GraphQueryResult` to `models.py`
+- Added new Protocols: `EntityExtractor`, `GraphStore` to `interfaces.py`
+- Added `GraphExtractionConfig`, `KnowledgeGraphConfig` to `config.py`; added `knowledge_graph:` section to `settings.yaml`
+- Added `networkx>=3.0` to `pyproject.toml`
+- Implemented `knowledge_graph/graph_store.py` — NetworkX `MultiDiGraph`, JSON persistence, node/edge upsert+dedup, `query_context()`, `delete_by_source()`, processed chunk ID tracking
+- Implemented `knowledge_graph/entity_extractor.py` — Ollama LLM structured JSON extraction, robust response parsing (fences, commentary), content length guard
+- Implemented `knowledge_graph/graph_retriever.py` — query entity extraction, graph traversal (direct + 1-hop), Chunk reconstruction from ChromaDB, proximity scoring (1.0 direct / 0.7 neighbour)
+- Added `get_chunks_by_ids()` to `ChromaDBStore` for `GraphRetriever`
+- Implemented `retrieval/hybrid_retrieval.py` — conforms to `Retriever` Protocol; `vector`/`graph`/`hybrid` modes; blended scoring with configurable weight; `top_k` truncation
+- Extended `IngestionPipeline` — optional `entity_extractor` + `graph_store` params; incremental extraction via processed chunk IDs; failures logged, never raised
+- Wired knowledge graph into `orchestration/__init__.py` — `_build_ingester` creates graph components when enabled; `_build_engine` routes through `HybridRetrieval`; `reingest` resets graph; `watch` handles graph deletion on file events; `koa graph-stats` command
+- Wrote 109 new unit tests across: `tests/knowledge_graph/test_graph_store.py`, `test_entity_extractor.py`, `test_graph_retriever.py`; `tests/retrieval/test_hybrid_retrieval.py`; extended `test_pipeline.py` and `test_chroma_store.py`
+- Updated `system-design.md`, `CONTEXT.md`, `implementation-tracker.md`, `session-log.md`
+- **302 unit tests passing, 0 failures** (pre-existing `test_parse_simple_fixture` failure unrelated to Phase 6)
+
+**Decisions made**:
+- NetworkX for graph store (see ADR-002): no server, pure Python, schema-free, transparent JSON, rich algorithms
+- Entity extraction uses `mistral` (same model as QA) at `temperature=0.0` — no additional model required
+- Hybrid blend weight default `0.3` (graph contributes 30%, vector 70%) — tunable via `knowledge_graph.graph_weight`
+- `HybridRetrieval` satisfies the existing `Retriever` Protocol — `QueryEngine` required zero changes
+- Graphify (`graphifyy` on PyPI) was evaluated and rejected: it targets codebases via Tree-sitter AST analysis and requires cloud LLM APIs, both incompatible with this project's constraints
+
+**Deferred**:
+- Integration tests against running Ollama (marked `@pytest.mark.integration`)
+- Graph visualisation / export to HTML
+- Multi-hop traversal depth > 1 as a configurable parameter
+
+**Next session should start with**:
+1. Load `CONTEXT.md` and `implementation-tracker.md`
+2. Run `koa reingest` against `sample-knowledge/` to build a live graph
+3. Run `koa graph-stats` to inspect the populated graph
+4. Run `koa ask "What frameworks use Python?"` to exercise hybrid retrieval end-to-end

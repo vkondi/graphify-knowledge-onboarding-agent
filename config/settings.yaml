@@ -67,3 +67,38 @@ llm:
 
   # Maximum context window in tokens to pass to the LLM.
   context_window: 8192
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Knowledge Graph (Phase 6 — see docs/architecture/knowledge-graph.md)
+# ─────────────────────────────────────────────────────────────────────────────
+knowledge_graph:
+  # Set to false to disable entity extraction and graph retrieval entirely.
+  # The vector pipeline (ChromaDB) continues to work normally when disabled.
+  enabled: true
+
+  # Local directory for the NetworkX graph JSON file.
+  path: ./.knowledge-onboarding-agent/graph
+
+  # Retrieval mode when answering queries.
+  # Options:
+  #   vector  — semantic similarity search only (ChromaDB). Default pre-Phase-6 behaviour.
+  #   graph   — entity graph traversal only (NetworkX).
+  #   hybrid  — both retrievers run; results merged weighted by graph_weight.
+  retrieval_mode: hybrid
+
+  # Blend weight for graph results in hybrid mode.
+  # 0.0 = only vector scores matter; 1.0 = only graph scores matter.
+  # Recommended range: 0.2–0.4 for balanced hybrid retrieval.
+  graph_weight: 0.3
+
+  extraction:
+    # Maximum number of entities to extract per chunk.
+    # Helps bound LLM output and downstream graph size.
+    max_entities_per_chunk: 10
+
+    # Maximum number of relationships to extract per chunk.
+    max_relationships_per_chunk: 10
+
+    # Temperature for entity extraction LLM calls.
+    # Use 0.0 for deterministic, reproducible extraction.
+    extraction_temperature: 0.0

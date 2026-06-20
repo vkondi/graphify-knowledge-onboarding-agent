@@ -10,10 +10,18 @@ Pipeline order (data flows top-to-bottom):
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    from knowledge_onboarding_agent.models import Chunk, ParsedDocument, RetrievedChunk
+    from knowledge_onboarding_agent.models import (
+        Chunk,
+        Entity,
+        GraphQueryResult,
+        ParsedDocument,
+        Relationship,
+        RetrievedChunk,
+    )
 
 
 class EmbeddingProvider(Protocol):
@@ -62,4 +70,63 @@ class Retriever(Protocol):
 
     def search(self, query: str) -> list[RetrievedChunk]:
         """Return the most relevant chunks for *query*, ordered by descending score."""
+        ...
+
+
+# ---------------------------------------------------------------------------
+# Knowledge graph Protocols (Phase 6)
+# ---------------------------------------------------------------------------
+
+class EntityExtractor(Protocol):
+    """Extracts entities and relationships from a Chunk using a local LLM."""
+
+    def extract(self, chunk: Chunk) -> tuple[list[Entity], list[Relationship]]:
+        """Return all entities and relationships found in *chunk*.
+
+        Returns two parallel lists: entities first, then relationships.
+        Both lists may be empty if no meaningful entities are found.
+        """
+        ...
+
+
+class GraphStore(Protocol):
+    """Persists and queries a knowledge graph of entities and relationships."""
+
+    def upsert(
+        self,
+        entities: list[Entity],
+        relationships: list[Relationship],
+    ) -> None:
+        """Insert or update entities and relationships.
+
+        Nodes and edges are identified by their normalized names and types;
+        duplicate inserts are merged rather than duplicated.
+        """
+        ...
+
+    def query_context(
+        self,
+        entity_names: list[str],
+        hops: int = 1,
+    ) -> GraphQueryResult:
+        """Traverse the graph starting from *entity_names* up to *hops* away.
+
+        Returns a ``GraphQueryResult`` with all matched nodes' chunk references.
+        Returns an empty result when no nodes match.
+        """
+        ...
+
+    def delete_by_source(self, source_path: Path) -> None:
+        """Remove all nodes and edges that originated from *source_path*.
+
+        Nodes that also appear in other source documents are not deleted;
+        only their reference to *source_path* is removed.
+        """
+        ...
+
+    def get_processed_chunk_ids(self) -> set[str]:
+        """Return the set of Chunk IDs for which extraction has been completed.
+
+        Used by the ingestion pipeline to skip already-processed chunks.
+        """
         ...

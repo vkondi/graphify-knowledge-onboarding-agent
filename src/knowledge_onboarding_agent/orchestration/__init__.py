@@ -59,6 +59,8 @@ def cli_entry() -> None:
     path_p = sub.add_parser("path", help="Generate a suggested learning path for a topic.")
     path_p.add_argument("topic", help="The topic to build a learning path for.")
 
+    sub.add_parser("graph-stats", help="Print knowledge graph statistics.")
+
     watch_p = sub.add_parser("watch", help="Watch paths and re-index documents on change.")
     watch_p.add_argument(
         "paths",
@@ -79,6 +81,10 @@ def cli_entry() -> None:
 
     if args.command == "watch":
         _cmd_watch(args.paths or [])
+        return
+
+    if args.command == "graph-stats":
+        _cmd_graph_stats()
         return
 
     # Remaining commands require the query engine.
@@ -145,19 +151,20 @@ def _cmd_ingest(args: argparse.Namespace) -> None:
         return
 
     try:
-        pipeline, chunk_embedder, store = _build_ingester()
+        pipeline, chunk_embedder, store, _graph_store = _build_ingester()
     except Exception as exc:  # noqa: BLE001
         print(f"Error initialising ingestion pipeline: {exc}", file=sys.stderr)
         sys.exit(1)
 
     total_new = 0
-    for fp in files:
+    for i, fp in enumerate(files, start=1):
+        print(f"  [{i}/{len(files)}] {fp.name}", flush=True)
         chunks = pipeline.ingest_file(fp)
         embedded = chunk_embedder.embed_chunks(chunks)
         if embedded:
             store.upsert_embedded_chunks(embedded)
         total_new += len(embedded)
-        print(f"  {fp.name}: {len(chunks)} chunks ({len(embedded)} new)")
+        print(f"    vectors: {len(chunks)} chunks ({len(embedded)} new)")
 
     print(f"\nDone. {total_new} new chunk(s) added to the knowledge base.")
 
@@ -221,19 +228,40 @@ def _cmd_reingest(cli_paths: list[str]) -> None:
     print(f"Wiping vector store ({store.count()} chunk(s) currently stored)...")
     store.reset()
 
+    # Reset graph store if enabled
+    if settings.knowledge_graph.enabled:
+        import shutil
+        from knowledge_onboarding_agent.knowledge_graph.graph_store import GraphStore as _GS
+        graph_path = settings.knowledge_graph.path
+        shutil.rmtree(graph_path, ignore_errors=True)
+        print("Wiped knowledge graph.")
+
+    entity_extractor = None
+    graph_store_instance = None
+    if settings.knowledge_graph.enabled:
+        from knowledge_onboarding_agent.knowledge_graph.entity_extractor import EntityExtractor
+        from knowledge_onboarding_agent.knowledge_graph.graph_store import GraphStore
+        entity_extractor = EntityExtractor.from_settings(settings)
+        graph_store_instance = GraphStore.from_settings(settings)
+
     # Fresh embedder — no known pairs after wipe.
-    pipeline = IngestionPipeline.from_settings(settings)
+    pipeline = IngestionPipeline.from_settings(
+        settings,
+        entity_extractor=entity_extractor,
+        graph_store=graph_store_instance,
+    )
     chunk_embedder = ChunkEmbedder.from_settings(settings)
 
     print(f"Re-indexing {len(files)} file(s)...\n")
     total_new = 0
-    for fp in files:
+    for i, fp in enumerate(files, start=1):
+        print(f"  [{i}/{len(files)}] {fp.name}", flush=True)
         chunks = pipeline.ingest_file(fp)
         embedded = chunk_embedder.embed_chunks(chunks)
         if embedded:
             store.upsert_embedded_chunks(embedded)
         total_new += len(embedded)
-        print(f"  {fp.name}: {len(chunks)} chunks ({len(embedded)} new)")
+        print(f"    vectors: {len(chunks)} chunks ({len(embedded)} new)")
 
     print(f"\nDone. {total_new} chunk(s) indexed from scratch.")
 
@@ -270,7 +298,7 @@ def _cmd_watch(cli_paths: list[str]) -> None:
         settings.ingestion.watch_paths = effective_paths
 
     try:
-        pipeline, chunk_embedder, store = _build_ingester()
+        pipeline, chunk_embedder, store, _graph_store = _build_ingester()
     except Exception as exc:  # noqa: BLE001
         print(f"Error initialising ingestion pipeline: {exc}", file=sys.stderr)
         sys.exit(1)
@@ -295,6 +323,8 @@ def _cmd_watch(cli_paths: list[str]) -> None:
                 if event.event_type == "deleted":
                     chunk_embedder.forget_source(str(event.path))
                     store.delete_by_source(str(event.path))
+                    if _graph_store is not None:
+                        _graph_store.delete_by_source(event.path)
                     print(f"  Removed: {event.path.name}")
                 else:
                     # Brief pause so editors that do atomic writes (delete +
@@ -304,6 +334,8 @@ def _cmd_watch(cli_paths: list[str]) -> None:
                     # re-embedding even if the content hasn't changed.
                     chunk_embedder.forget_source(str(event.path))
                     store.delete_by_source(str(event.path))
+                    if _graph_store is not None:
+                        _graph_store.delete_by_source(event.path)
                     chunks = pipeline.process_event(event)
                     embedded = chunk_embedder.embed_chunks(chunks)
                     if embedded:
@@ -317,7 +349,11 @@ def _cmd_watch(cli_paths: list[str]) -> None:
 
 
 def _build_ingester() -> tuple:
-    """Construct ingestion pipeline, chunk embedder, and store from project settings."""
+    """Construct ingestion pipeline, chunk embedder, and store from project settings.
+
+    When ``knowledge_graph.enabled`` is true in settings, the pipeline is also
+    wired to the ``EntityExtractor`` and ``GraphStore``.
+    """
     from knowledge_onboarding_agent.config import load_settings
     from knowledge_onboarding_agent.embeddings.chunk_embedder import ChunkEmbedder
     from knowledge_onboarding_agent.ingestion.pipeline import IngestionPipeline
@@ -327,12 +363,30 @@ def _build_ingester() -> tuple:
     store = ChromaDBStore.from_settings(settings)
     known_pairs = store.get_stored_hash_source_pairs()
     chunk_embedder = ChunkEmbedder.from_settings(settings, known_pairs=known_pairs)
-    pipeline = IngestionPipeline.from_settings(settings)
-    return pipeline, chunk_embedder, store
+
+    entity_extractor = None
+    graph_store = None
+    if settings.knowledge_graph.enabled:
+        from knowledge_onboarding_agent.knowledge_graph.entity_extractor import EntityExtractor
+        from knowledge_onboarding_agent.knowledge_graph.graph_store import GraphStore
+        entity_extractor = EntityExtractor.from_settings(settings)
+        graph_store = GraphStore.from_settings(settings)
+
+    pipeline = IngestionPipeline.from_settings(
+        settings,
+        entity_extractor=entity_extractor,
+        graph_store=graph_store,
+    )
+    return pipeline, chunk_embedder, store, graph_store
 
 
 def _build_engine() -> QueryEngine:
-    """Construct a ``QueryEngine`` wired to the project settings."""
+    """Construct a ``QueryEngine`` wired to the project settings.
+
+    When ``knowledge_graph.enabled`` is true, the engine uses ``HybridRetrieval``
+    which delegates to ``SemanticSearch`` and/or ``GraphRetriever`` depending on
+    ``knowledge_graph.retrieval_mode``.
+    """
     from knowledge_onboarding_agent.config import load_settings
     from knowledge_onboarding_agent.embeddings.ollama_embedder import OllamaEmbedder
     from knowledge_onboarding_agent.retrieval.semantic_search import SemanticSearch
@@ -341,6 +395,53 @@ def _build_engine() -> QueryEngine:
     settings = load_settings()
     store = ChromaDBStore.from_settings(settings)
     embedder = OllamaEmbedder.from_settings(settings)
-    retriever = SemanticSearch.from_settings(settings, embedder, store)
+    semantic_search = SemanticSearch.from_settings(settings, embedder, store)
+
+    if settings.knowledge_graph.enabled:
+        from knowledge_onboarding_agent.knowledge_graph.graph_retriever import GraphRetriever
+        from knowledge_onboarding_agent.knowledge_graph.graph_store import GraphStore
+        from knowledge_onboarding_agent.retrieval.hybrid_retrieval import HybridRetrieval
+        graph_store = GraphStore.from_settings(settings)
+        graph_retriever = GraphRetriever.from_settings(
+            settings, graph_store=graph_store, chroma_store=store
+        )
+        retriever = HybridRetrieval.from_settings(
+            settings, semantic_search=semantic_search, graph_retriever=graph_retriever
+        )
+    else:
+        retriever = semantic_search
+
     return QueryEngine.from_settings(settings, retriever)
+
+
+def _cmd_graph_stats() -> None:
+    """Handle the ``graph-stats`` sub-command."""
+    from knowledge_onboarding_agent.config import load_settings
+    from knowledge_onboarding_agent.knowledge_graph.graph_store import GraphStore
+
+    settings = load_settings()
+    if not settings.knowledge_graph.enabled:
+        print("Knowledge graph is disabled (knowledge_graph.enabled: false in settings.yaml).")
+        return
+
+    try:
+        graph_store = GraphStore.from_settings(settings)
+    except Exception as exc:  # noqa: BLE001
+        print(f"Error loading graph store: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+    nodes = graph_store.node_count()
+    edges = graph_store.edge_count()
+    processed = len(graph_store.get_processed_chunk_ids())
+    mode = settings.knowledge_graph.retrieval_mode
+    weight = settings.knowledge_graph.graph_weight
+
+    print(f"Knowledge Graph Statistics")
+    print(f"  Nodes (entities):        {nodes}")
+    print(f"  Edges (relationships):   {edges}")
+    print(f"  Chunks processed:        {processed}")
+    print(f"  Retrieval mode:          {mode}")
+    if mode == "hybrid":
+        print(f"  Graph blend weight:      {weight}")
+    print(f"  Graph path:              {settings.knowledge_graph.path}")
 

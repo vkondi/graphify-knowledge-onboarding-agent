@@ -374,3 +374,57 @@ class TestChromaDBStoreGetHashSourcePairs:
             metadatas=[{"unrelated_key": "value"}],
         )
         assert store.get_stored_hash_source_pairs() == set()
+
+
+# ---------------------------------------------------------------------------
+# get_chunks_by_ids (Phase 6 — added for GraphRetriever)
+# ---------------------------------------------------------------------------
+
+class TestGetChunksByIds:
+    def test_returns_chunk_for_known_id(self):
+        store = _ephemeral_store()
+        ec = _make_embedded_chunk("Python is great.", vector_seed=0)
+        store.upsert_embedded_chunks([ec])
+        chunks = store.get_chunks_by_ids([ec.chunk.id])
+        assert len(chunks) == 1
+        assert chunks[0].id == ec.chunk.id
+
+    def test_chunk_content_matches_original(self):
+        store = _ephemeral_store()
+        ec = _make_embedded_chunk("Hello world content.", vector_seed=0)
+        store.upsert_embedded_chunks([ec])
+        chunks = store.get_chunks_by_ids([ec.chunk.id])
+        assert chunks[0].content == "Hello world content."
+
+    def test_chunk_source_path_matches_original(self):
+        store = _ephemeral_store()
+        ec = _make_embedded_chunk("content", vector_seed=0)
+        store.upsert_embedded_chunks([ec])
+        chunks = store.get_chunks_by_ids([ec.chunk.id])
+        assert chunks[0].source_path == ec.chunk.source_path
+
+    def test_multiple_ids_returns_multiple_chunks(self):
+        store = _ephemeral_store()
+        ec1 = _make_embedded_chunk("Content A", index=0, vector_seed=0)
+        ec2 = _make_embedded_chunk("Content B", index=1, vector_seed=1)
+        store.upsert_embedded_chunks([ec1, ec2])
+        chunks = store.get_chunks_by_ids([ec1.chunk.id, ec2.chunk.id])
+        assert len(chunks) == 2
+
+    def test_unknown_id_is_silently_skipped(self):
+        store = _ephemeral_store()
+        chunks = store.get_chunks_by_ids(["does-not-exist:0"])
+        assert chunks == []
+
+    def test_empty_id_list_returns_empty(self):
+        store = _ephemeral_store()
+        chunks = store.get_chunks_by_ids([])
+        assert chunks == []
+
+    def test_mixed_known_and_unknown_ids(self):
+        store = _ephemeral_store()
+        ec = _make_embedded_chunk("Known content", vector_seed=0)
+        store.upsert_embedded_chunks([ec])
+        chunks = store.get_chunks_by_ids([ec.chunk.id, "nonexistent:99"])
+        assert len(chunks) == 1
+        assert chunks[0].id == ec.chunk.id

@@ -57,12 +57,27 @@ class LLMConfig(BaseModel):
     context_window: int = 8192
 
 
+class GraphExtractionConfig(BaseModel):
+    max_entities_per_chunk: int = 10
+    max_relationships_per_chunk: int = 10
+    extraction_temperature: float = 0.0
+
+
+class KnowledgeGraphConfig(BaseModel):
+    enabled: bool = True
+    path: str = "./.knowledge-onboarding-agent/graph"
+    retrieval_mode: str = "hybrid"  # vector | graph | hybrid
+    graph_weight: float = 0.3       # hybrid blend weight (0.0–1.0)
+    extraction: GraphExtractionConfig = Field(default_factory=GraphExtractionConfig)
+
+
 class Settings(BaseModel):
     ingestion: IngestionConfig = Field(default_factory=IngestionConfig)
     embeddings: EmbeddingsConfig = Field(default_factory=EmbeddingsConfig)
     storage: StorageConfig = Field(default_factory=StorageConfig)
     retrieval: RetrievalConfig = Field(default_factory=RetrievalConfig)
     llm: LLMConfig = Field(default_factory=LLMConfig)
+    knowledge_graph: KnowledgeGraphConfig = Field(default_factory=KnowledgeGraphConfig)
 
 
 def load_settings(config_path: Path = _DEFAULT_CONFIG_PATH) -> Settings:

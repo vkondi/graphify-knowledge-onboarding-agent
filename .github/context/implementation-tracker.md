@@ -104,6 +104,31 @@
 
 ---
 
+## Phase 6 - Knowledge Graph Layer
+
+**Goal**: Augment vector retrieval with a relationship-aware knowledge graph. Enable hybrid retrieval combining semantic search and graph traversal.
+
+| Task | Status | Notes |
+|---|---|---|
+| Write ADR-002 (graph database selection) | `[x]` | `docs/decisions/ADR-002-knowledge-graph-selection.md` - NetworkX selected; see ADR for full rationale |
+| Write knowledge graph architecture doc | `[x]` | `docs/architecture/knowledge-graph.md` - entity/edge schema, extraction strategy, retrieval modes |
+| Add `Entity`, `Relationship`, `GraphQueryResult` data models | `[x]` | `models.py` - three new dataclasses |
+| Add `EntityExtractor`, `GraphStore` Protocols | `[x]` | `interfaces.py` - two new Protocols with full method signatures |
+| Add `KnowledgeGraphConfig` to `config.py` | `[x]` | `GraphExtractionConfig` + `KnowledgeGraphConfig` Pydantic models; added to `Settings` |
+| Add `knowledge_graph:` section to `settings.yaml` | `[x]` | `enabled`, `path`, `retrieval_mode`, `graph_weight`, `extraction.*` |
+| Add `networkx>=3.0` to `pyproject.toml` | `[x]` | Core dependency (no optional extra needed at this scale) |
+| Implement `GraphStore` | `[x]` | `knowledge_graph/graph_store.py` - NetworkX `MultiDiGraph`, JSON persistence, node/edge upsert/dedup, delete_by_source, processed ID tracking |
+| Implement `EntityExtractor` | `[x]` | `knowledge_graph/entity_extractor.py` - Ollama LLM call, structured JSON prompt, robust JSON parsing (fences, commentary), per-chunk dedup via processed IDs |
+| Implement `GraphRetriever` | `[x]` | `knowledge_graph/graph_retriever.py` - query entity extraction, graph traversal, Chunk reconstruction from ChromaDB, proximity scoring |
+| Add `get_chunks_by_ids()` to `ChromaDBStore` | `[x]` | `storage/chroma_store.py` - fetches Chunks by ID for `GraphRetriever` |
+| Implement `HybridRetrieval` | `[x]` | `retrieval/hybrid_retrieval.py` - conforms to `Retriever` Protocol; `vector`/`graph`/`hybrid` modes; blended scoring |
+| Extend `IngestionPipeline` with entity extraction | `[x]` | `ingestion/pipeline.py` - optional `entity_extractor` + `graph_store` params; skips already-processed chunks; failures are logged, not raised |
+| Wire knowledge graph into CLI + build helpers | `[x]` | `orchestration/__init__.py` - `_build_ingester`/`_build_engine` create graph components when `enabled`; `reingest` resets graph; `watch` deletes graph entries on file delete; `koa graph-stats` sub-command |
+| Write unit tests | `[x]` | `tests/knowledge_graph/test_graph_store.py` (40 tests), `test_entity_extractor.py` (18 tests), `test_graph_retriever.py` (20 tests); `tests/retrieval/test_hybrid_retrieval.py` (16 tests); extended `test_pipeline.py` (+8 tests); extended `test_chroma_store.py` (+7 tests) |
+| Update all documentation | `[x]` | `system-design.md`, `knowledge-graph.md`, `CONTEXT.md`, `implementation-tracker.md`, `session-log.md` |
+
+---
+
 ## Decisions Made
 
 | Decision | Resolution |
@@ -112,6 +137,7 @@
 | ChromaDB vs FAISS as primary store | ChromaDB primary; FAISS optional fallback |
 | Chunking strategy (size, overlap, method) | `SentenceWindowChunker` - 512 words, 64 overlap |
 | LLM model selection for Ollama | `mistral` (7B Q4) |
+| Knowledge graph database (ADR-002) | NetworkX + JSON persistence - see [ADR-002](../../docs/decisions/ADR-002-knowledge-graph-selection.md) (Accepted) |
 
 ---
 
@@ -123,3 +149,5 @@
 | Re-embedding cost on large corpora | Medium | Content hash deduplication in Phase 2 |
 | ChromaDB performance at scale | Low-medium | FAISS fallback, benchmark at 10k docs |
 | LlamaIndex API changes | Low | Pin version, abstract behind wrapper |
+| Knowledge graph grows very large (>100k nodes) | Low | At current scale (~25k nodes for 500 docs), NetworkX + JSON is fine. Migrate to Kuzu if needed (new ADR required). |
+| LLM entity extraction quality | Medium | Temperature=0, structured JSON prompt, graceful fallback (empty lists on failure) |

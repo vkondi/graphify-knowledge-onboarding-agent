@@ -30,26 +30,31 @@ Each stage is:
 │                   1. INGESTION                          │
 │  FileWatcher → MarkdownParser → ChunkingStrategy        │
 │  Output: List[Chunk]                                    │
-└───────────────────────┬─────────────────────────────────┘
-                        │  List[Chunk]
-                        ▼
+└──────────────┬────────────────────────┬─────────────────┘
+               │  List[Chunk]            │  List[Chunk]
+               ▼                         ▼
+┌──────────────────────────┐  ┌──────────────────────────────┐
+│     2. EMBEDDINGS        │  │  2b. ENTITY EXTRACTION       │
+│  OllamaEmbedder          │  │  EntityExtractor (Ollama LLM) │
+│  → List[EmbeddedChunk]   │  │  → entities + relationships   │
+└──────────┬───────────────┘  └────────────┬─────────────────┘
+           │                               │
+           ▼                               ▼
+┌──────────────────────────┐  ┌──────────────────────────────┐
+│     3. VECTOR STORAGE    │  │  3b. GRAPH STORAGE            │
+│  ChromaDB / FAISS        │  │  GraphStore (NetworkX + JSON) │
+│  (unchanged)             │  │  Nodes: entities              │
+│                          │  │  Edges: relationships         │
+└──────────┬───────────────┘  └────────────┬─────────────────┘
+           │                               │
+           └──────────────┬────────────────┘
+                          │
+                          ▼
 ┌─────────────────────────────────────────────────────────┐
-│                   2. EMBEDDINGS                         │
-│  EmbeddingProvider (Ollama) → vector floats             │
-│  Output: List[EmbeddedChunk]                            │
-└───────────────────────┬─────────────────────────────────┘
-                        │  List[EmbeddedChunk]
-                        ▼
-┌─────────────────────────────────────────────────────────┐
-│                   3. STORAGE                            │
-│  VectorStore (ChromaDB / FAISS)                         │
-│  Stores: vectors + metadata (source, timestamps, hash)  │
-└───────────────────────┬─────────────────────────────────┘
-                        │  query (natural language)
-                        ▼
-┌─────────────────────────────────────────────────────────┐
-│                   4. RETRIEVAL                          │
-│  SemanticSearch → Reranker (optional)                   │
+│             4. RETRIEVAL (hybrid)                       │
+│  mode=vector  → SemanticSearch only                     │
+│  mode=graph   → GraphRetriever only                     │
+│  mode=hybrid  → HybridRetrieval (merged + scored)       │
 │  Output: List[RetrievedChunk] (with scores)             │
 └───────────────────────┬─────────────────────────────────┘
                         │  List[RetrievedChunk] + query
@@ -58,9 +63,13 @@ Each stage is:
 │                  5. ORCHESTRATION                       │
 │  QueryEngine + Ollama LLM (via ollama.Client)           │
 │  Features: QA, conflict detection, learning paths       │
+│  CLI: koa ask | ingest | reingest | watch |             │
+│       conflicts | path | graph-stats                    │
 │  Output: Response (answer + sources + metadata)         │
 └─────────────────────────────────────────────────────────┘
 ```
+
+> See `docs/architecture/knowledge-graph.md` for the detailed knowledge graph design.
 
 ---
 
@@ -163,6 +172,8 @@ Protocols defined in `src/knowledge_onboarding_agent/interfaces.py`:
 | `VectorStore` | `ChunkEmbedder`, `SemanticSearch` |
 | `ChunkingStrategy` | `IngestionPipeline` |
 | `Retriever` | `QueryEngine` |
+| `EntityExtractor` | `IngestionPipeline` |
+| `GraphStore` | `IngestionPipeline`, `GraphRetriever` |
 
 Concrete implementations import interfaces; nothing imports concrete implementations across stages.
 
@@ -180,6 +191,10 @@ Key config sections:
 - `storage.path` - local persistence path
 - `retrieval.top_k` - number of results to retrieve
 - `llm.model` - Ollama LLM model name
+- `knowledge_graph.enabled` - enable/disable the knowledge graph layer
+- `knowledge_graph.path` - directory for graph persistence
+- `knowledge_graph.retrieval_mode` - `vector`, `graph`, or `hybrid`
+- `knowledge_graph.graph_weight` - blend weight for hybrid mode (0.0–1.0)
 
 ---
 
@@ -211,4 +226,6 @@ The following are explicitly out of scope for the initial architecture and will 
 - [Project Overview](../project-overview.md)
 - [Runtime Constraints](../constraints/runtime-constraints.md)
 - [ADR-001: Model Selection](../decisions/ADR-001-model-selection.md)
+- [ADR-002: Knowledge Graph Database Selection](../decisions/ADR-002-knowledge-graph-selection.md)
+- [Knowledge Graph Architecture](knowledge-graph.md)
 - [Roadmap](../roadmap/roadmap.md)

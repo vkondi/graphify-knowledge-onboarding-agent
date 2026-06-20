@@ -99,3 +99,46 @@ class Response:
     answer: str                     # LLM-generated answer text
     sources: list[RetrievedChunk]   # chunks used as context for the answer
     query: str                      # the original question
+
+
+# ---------------------------------------------------------------------------
+# Knowledge graph data models (Phase 6)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class Entity:
+    """A single entity extracted from a Chunk by the EntityExtractor.
+
+    Produced by EntityExtractor; consumed by GraphStore.
+    """
+
+    name: str           # original-casing display name (e.g. "FastAPI")
+    entity_type: str    # e.g. "Framework", "Concept", "Technology"
+    source_path: Path   # the document this entity was found in
+    chunk_id: str       # the Chunk.id that contained this entity
+
+
+@dataclass
+class Relationship:
+    """A directed relationship between two entities extracted from a Chunk.
+
+    Produced by EntityExtractor; consumed by GraphStore.
+    """
+
+    source_entity: str      # normalized (lowercase) name of the source entity
+    target_entity: str      # normalized (lowercase) name of the target entity
+    relationship_type: str  # e.g. "Uses", "DependsOn", "Implements"
+    source_path: Path       # the document this relationship was found in
+    chunk_id: str           # the Chunk.id that evidenced this relationship
+
+
+@dataclass
+class GraphQueryResult:
+    """Result of a knowledge graph traversal query.
+
+    Produced by GraphStore.query_context(); consumed by GraphRetriever.
+    """
+
+    entity_names: list[str]         # normalized node names that matched the query
+    chunk_ids: list[str]            # all Chunk.id values referenced by matched nodes
+    source_paths: list[Path]        # all source documents referenced by matched nodes

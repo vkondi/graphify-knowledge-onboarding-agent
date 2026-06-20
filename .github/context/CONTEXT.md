@@ -38,6 +38,7 @@ Knowledge Onboarding Agent ingests markdown files, notes, articles, and document
 | LLM model | `mistral` via Ollama | Confirmed |
 | Framework | LlamaIndex | Confirmed |
 | Vector store | ChromaDB (primary), FAISS (fallback) | Confirmed |
+| Knowledge graph | NetworkX + JSON persistence | Confirmed (ADR-002) |
 | File watching | Watchdog | Confirmed |
 | Markdown parsing | `mistune` | Confirmed |
 | Testing | pytest | Confirmed |
@@ -46,18 +47,18 @@ Knowledge Onboarding Agent ingests markdown files, notes, articles, and document
 
 ## Architecture Summary
 
-The system is a pipeline with five stages:
+The system is a pipeline with six stages:
 
 ```
 [Watched Folders]
        ↓
   [Ingestion]      ← parse, chunk, tag
-       ↓
-  [Embeddings]     ← local Ollama embedding model
-       ↓
-  [Storage]        ← ChromaDB / FAISS
-       ↓
-  [Retrieval]      ← semantic search + reranking
+       ↓ ─────────────────────────┐
+  [Embeddings]     ← local Ollama  │ [Entity Extraction] ← Ollama LLM
+       ↓                          ↓
+  [Storage]        ← ChromaDB / FAISS + [Graph Store] ← NetworkX
+       ↓ ──────────────────────────────────────────────┘
+  [Retrieval]      ← SemanticSearch | GraphRetriever | HybridRetrieval
        ↓
   [Orchestration]  ← LlamaIndex agent + Ollama LLM → response
 ```
@@ -81,6 +82,7 @@ Each stage is a separate Python module with no direct cross-imports. They commun
 | ADR | Decision | Status |
 |---|---|---|
 | [ADR-001](../docs/decisions/ADR-001-model-selection.md) | Model selection for embeddings and LLM | Accepted |
+| [ADR-002](../docs/decisions/ADR-002-knowledge-graph-selection.md) | Knowledge graph database selection (NetworkX) | Accepted |
 
 ---
 
@@ -94,6 +96,7 @@ All phases complete. The system is fully operational.
 - [x] Phase 3 - Storage Layer (`ChromaDBStore` primary, `FAISSStore` optional)
 - [x] Phase 4 - Retrieval (`SemanticSearch`)
 - [x] Phase 5 - Orchestration and CLI (`QueryEngine`; `koa ingest`, `reingest`, `ask`, `conflicts`, `path`, `watch`)
+- [x] Phase 6 - Knowledge Graph Layer (`EntityExtractor`, `GraphStore`, `GraphRetriever`, `HybridRetrieval`; `koa graph-stats`)
 
 **Next focus**: ADR-001 finalization, optional reranking/hybrid search (Phase 4 deferred items)
 

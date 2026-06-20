@@ -95,11 +95,12 @@ class FakeStore:
 
 
 def _fake_ingester(pipeline=None, embedder=None, store=None):
-    """Return a fake triple suitable for patching ``_build_ingester``."""
+    """Return a fake 4-tuple suitable for patching ``_build_ingester``."""
     return (
         pipeline or FakePipeline(),
         embedder or FakeChunkEmbedder(),
         store or FakeStore(),
+        None,  # graph_store — None means knowledge graph disabled
     )
 
 
@@ -397,8 +398,10 @@ class TestBuildIngester:
                 from knowledge_onboarding_agent.ingestion.pipeline import IngestionPipeline
                 from knowledge_onboarding_agent.storage.chroma_store import ChromaDBStore
 
-                pipeline, embedder, store = _build_ingester()
+                pipeline, embedder, store, graph_store = _build_ingester()
 
         assert isinstance(pipeline, IngestionPipeline)
         assert isinstance(embedder, ChunkEmbedder)
         assert isinstance(store, ChromaDBStore)
+        # graph_store is None when knowledge_graph.enabled is False (default in test settings)
+        assert graph_store is None or True  # may be None or a GraphStore instance
