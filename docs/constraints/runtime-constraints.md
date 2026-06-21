@@ -1,4 +1,4 @@
-﻿# Runtime Constraints - Knowledge Onboarding Agent
+﻿# Runtime Constraints - Graphify Knowledge Onboarding Agent
 
 > **Purpose**: Document the hard constraints that every architectural and implementation decision must respect.
 > These are non-negotiable. Add to this list; never remove without a new ADR.

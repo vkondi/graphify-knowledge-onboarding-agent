@@ -1,13 +1,13 @@
 ﻿---
 mode: ask
-description: Create an Architecture Decision Record for Knowledge Onboarding Agent.
+description: Create an Architecture Decision Record for Graphify Knowledge Onboarding Agent.
 ---
 
-# ADR Creation - Knowledge Onboarding Agent
+# ADR Creation - Graphify Knowledge Onboarding Agent
 
 ## Context
 
-I need to create an Architecture Decision Record (ADR) for Knowledge Onboarding Agent.
+I need to create an Architecture Decision Record (ADR) for Graphify Knowledge Onboarding Agent.
 
 **Decision topic**: [What is this decision about?]
 

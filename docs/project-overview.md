@@ -1,6 +1,6 @@
-﻿# Project Overview - Knowledge Onboarding Agent
+﻿# Project Overview - Graphify Knowledge Onboarding Agent
 
-> **Purpose of this document**: Authoritative description of what Knowledge Onboarding Agent is, what it is trying to achieve, and what it explicitly is not.
+> **Purpose of this document**: Authoritative description of what Graphify Knowledge Onboarding Agent is, what it is trying to achieve, and what it explicitly is not.
 > Update this document when the project scope changes.
 
 ---
@@ -16,7 +16,7 @@ Knowledge workers accumulate large amounts of markdown notes, technical articles
 
 Existing solutions (Notion, Obsidian, Roam) provide organization but do not reason across content. Cloud AI tools (ChatGPT, Perplexity) require sending private notes to third-party servers.
 
-**Knowledge Onboarding Agent solves this by bringing AI reasoning to local files, running entirely on-device.**
+**Graphify Knowledge Onboarding Agent solves this by bringing graph-aware AI reasoning to local files, running entirely on-device, with automatic entity extraction and relationship mapping.**
 
 ---
 

@@ -1,13 +1,13 @@
 ﻿---
 mode: agent
-description: Implement a specific Knowledge Onboarding Agent task. Loads conventions and proposes interface before writing code.
+description: Implement a specific Graphify Knowledge Onboarding Agent task. Loads conventions and proposes interface before writing code.
 ---
 
-# Implementation Task - Knowledge Onboarding Agent
+# Implementation Task - Graphify Knowledge Onboarding Agent
 
 ## Context
 
-I am working on **Knowledge Onboarding Agent**, a local-first AI knowledge system.
+I am working on **Graphify Knowledge Onboarding Agent**, a local-first, graph-aware AI knowledge system.
 
 **Current phase**: [Phase N - name from roadmap]
 **Task**: [Exact task from `implementation-tracker.md`]

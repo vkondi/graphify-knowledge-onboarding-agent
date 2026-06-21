@@ -1,4 +1,4 @@
-﻿# Roadmap - Knowledge Onboarding Agent
+﻿# Roadmap - Graphify Knowledge Onboarding Agent
 
 > **Purpose**: Track development milestones at a high level.
 > Not a sprint board - think in phases, not tickets.

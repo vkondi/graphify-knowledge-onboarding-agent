@@ -1,4 +1,4 @@
-# Knowledge Onboarding Agent — Runtime Configuration
+# Graphify Knowledge Onboarding Agent — Runtime Configuration
 # All tuneable values live here. Source code must never hardcode these values.
 # See docs/constraints/runtime-constraints.md for limits and rationale.
 

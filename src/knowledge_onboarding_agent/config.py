@@ -1,4 +1,4 @@
-"""Configuration loader for Knowledge Onboarding Agent.
+"""Configuration loader for Graphify Knowledge Onboarding Agent.
 
 Reads config/settings.yaml and validates it with Pydantic.
 All runtime configuration is sourced from here — never hardcoded in stage modules.

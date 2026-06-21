@@ -91,7 +91,7 @@ def cli_entry() -> None:
     try:
         engine = _build_engine()
     except Exception as exc:  # noqa: BLE001
-        print(f"Error initialising Knowledge Onboarding Agent: {exc}", file=sys.stderr)
+        print(f"Error initialising Graphify Knowledge Onboarding Agent: {exc}", file=sys.stderr)
         sys.exit(1)
 
     if args.command == "ask":

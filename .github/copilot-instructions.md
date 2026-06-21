@@ -1,4 +1,4 @@
-﻿# GitHub Copilot Instructions - Knowledge Onboarding Agent
+﻿# GitHub Copilot Instructions - Graphify Knowledge Onboarding Agent
 
 <!-- 
   This file governs how Copilot behaves in this repository.
@@ -8,7 +8,7 @@
 
 ## Project Identity
 
-You are helping develop **Knowledge Onboarding Agent** - a local-first AI-powered knowledge system that ingests markdown files, generates local embeddings, and synthesizes answers using a local Ollama LLM. No cloud AI APIs are used.
+You are helping develop **Graphify Knowledge Onboarding Agent** - a local-first, graph-aware AI knowledge system that ingests markdown files, generates local embeddings, extracts entities and relationships, builds a knowledge graph, and synthesizes answers using a local Ollama LLM. No cloud AI APIs are used.
 
 Before writing any code, you should understand the project's current state. Ask me to load context if it hasn't been established:
 - `.github/context/CONTEXT.md` - project identity, stack, conventions

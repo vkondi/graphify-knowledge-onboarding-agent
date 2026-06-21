@@ -1,6 +1,6 @@
-﻿# Knowledge Onboarding Agent
+﻿# Graphify Knowledge Onboarding Agent
 
-> A local-first AI-powered knowledge assistant that ingests your markdown notes, indexes them with local embeddings, and answers questions by reasoning across your entire knowledge base - entirely on your own hardware, with no cloud APIs.
+> A local-first, graph-aware AI knowledge assistant that ingests your markdown notes, extracts entities and relationships, builds a knowledge graph, and answers questions by reasoning across your entire knowledge base - entirely on your own hardware, with no cloud APIs.
 
 ---
 
