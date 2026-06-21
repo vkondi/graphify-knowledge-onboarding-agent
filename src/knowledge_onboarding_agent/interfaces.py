@@ -1,4 +1,4 @@
-"""Protocol definitions for all inter-stage contracts in Knowledge Onboarding Agent.
+"""Protocol definitions for all inter-stage contracts in Graphify Knowledge Onboarding Agent.
 
 All concrete implementations must conform to these Protocols.
 Stages must only import from this module — never from a sibling stage's module.

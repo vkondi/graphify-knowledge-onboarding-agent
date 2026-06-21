@@ -1,4 +1,4 @@
-﻿# Knowledge Onboarding Agent - Master Project Context
+﻿# Graphify Knowledge Onboarding Agent - Master Project Context
 
 > **Load this file at the start of every AI session.**
 > It is the authoritative summary of what this project is, where it stands, and what conventions govern it.
@@ -7,7 +7,7 @@
 
 ## Project Identity
 
-**Name**: Knowledge Onboarding Agent
+**Name**: Graphify Knowledge Onboarding Agent
 **Type**: Local-first AI knowledge system
 **Language**: Python 3.11+
 **Status**: Implementation complete (v1 - all phases shipped)
@@ -17,7 +17,7 @@
 
 ## Core Purpose
 
-Knowledge Onboarding Agent ingests markdown files, notes, articles, and documentation into a local vector store, then uses a local LLM (via Ollama) to:
+Graphify Knowledge Onboarding Agent ingests markdown files, notes, articles, and documentation into a local vector store, extracts entities and relationships, builds a knowledge graph, then uses a local LLM (via Ollama) to:
 
 - Answer questions synthesized across all documents
 - Detect conflicting claims between sources

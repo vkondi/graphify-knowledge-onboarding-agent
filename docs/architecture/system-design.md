@@ -1,4 +1,4 @@
-﻿# System Design - Knowledge Onboarding Agent
+﻿# System Design - Graphify Knowledge Onboarding Agent
 
 > **Purpose**: Describe the architecture of the system: components, data flow, interfaces, and design principles.
 > This is the primary reference when working on any component. Keep it updated as the design evolves.
@@ -7,7 +7,7 @@
 
 ## Architectural Style
 
-Knowledge Onboarding Agent is a **pipeline architecture** with five stages.
+Graphify Knowledge Onboarding Agent is a **pipeline architecture** with six stages.
 
 Each stage is:
 - A separate Python module under `src/knowledge_onboarding_agent/`

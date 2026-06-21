@@ -9,7 +9,7 @@
 
 ## Context
 
-Knowledge Onboarding Agent requires two types of models:
+Graphify Knowledge Onboarding Agent requires two types of models:
 
 1. **An embedding model** - converts text chunks to vector representations for semantic search. Called frequently (every new or changed document). Must be fast and memory-efficient.
 2. **An LLM** - synthesizes retrieved chunks into a natural language answer. Called once per query. Quality matters more than speed, within the memory budget.

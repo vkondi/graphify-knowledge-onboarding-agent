@@ -1,4 +1,4 @@
-"""Shared data models for all Knowledge Onboarding Agent pipeline stages.
+"""Shared data models for all Graphify Knowledge Onboarding Agent pipeline stages.
 
 These dataclasses are the *only* contracts between pipeline stages.
 Stage modules import from here; they never import from sibling stage modules.

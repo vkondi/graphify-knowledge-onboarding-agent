@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate that the local environment is ready for Knowledge Onboarding Agent.
+"""Validate that the local environment is ready for Graphify Knowledge Onboarding Agent.
 
 Checks:
   - Python version >= 3.11
@@ -133,7 +133,7 @@ def check_config_file() -> bool:
 # ---------------------------------------------------------------------------
 
 def main() -> int:
-    print("\nKnowledge Onboarding Agent — Environment Validation")
+    print("\nGraphify Knowledge Onboarding Agent — Environment Validation")
     print("=" * 42)
 
     results: list[bool] = []

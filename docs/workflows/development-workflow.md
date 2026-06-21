@@ -1,6 +1,6 @@
-﻿# Development Workflow - Knowledge Onboarding Agent
+﻿# Development Workflow - Graphify Knowledge Onboarding Agent
 
-> **Purpose**: Define the repeatable workflow for AI-assisted development on this project.
+> **Purpose**: Define the repeatable workflow for AI-assisted development on Graphify Knowledge Onboarding Agent.
 > Following this workflow minimizes context drift, hallucinated assumptions, and inconsistent code generation.
 
 ---

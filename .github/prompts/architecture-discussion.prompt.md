@@ -1,13 +1,13 @@
 ﻿---
 mode: ask
-description: Start an architecture discussion for Knowledge Onboarding Agent. Loads project context and frames the decision correctly.
+description: Start an architecture discussion for Graphify Knowledge Onboarding Agent. Loads project context and frames the decision correctly.
 ---
 
-# Architecture Discussion - Knowledge Onboarding Agent
+# Architecture Discussion - Graphify Knowledge Onboarding Agent
 
 ## Context
 
-I am working on **Knowledge Onboarding Agent**, a local-first AI knowledge system.
+I am working on **Graphify Knowledge Onboarding Agent**, a local-first, graph-aware AI knowledge system.
 
 Before we discuss, please acknowledge these constraints (from `docs/constraints/runtime-constraints.md`):
 - Entirely local - no cloud AI APIs

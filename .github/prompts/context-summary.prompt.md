@@ -1,9 +1,9 @@
 ﻿---
 mode: ask
-description: Summarize the current session into a context-continuity log entry for Knowledge Onboarding Agent.
+description: Summarize the current session into a context-continuity log entry for Graphify Knowledge Onboarding Agent.
 ---
 
-# Context Summarization - Knowledge Onboarding Agent
+# Context Summarization - Graphify Knowledge Onboarding Agent
 
 ## Purpose
 
