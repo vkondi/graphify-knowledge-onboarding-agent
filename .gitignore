@@ -40,3 +40,5 @@ Thumbs.db
 *.index
 *.faiss
 
+# ── Sample Data ──────────────────────────────────────────────────────────────
+sample-knowledge/blogs
